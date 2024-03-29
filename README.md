@@ -1,0 +1,1 @@
+Python script to make a POST request to a local server running on your machine. The script sends a JSON payload containing a search string to the specified URL (http://127.0.0.1:5000/mytest). After receiving a response from the server, it prints out the status code and the response text.
