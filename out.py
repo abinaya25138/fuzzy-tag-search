@@ -1,23 +1,21 @@
+"""
+Streaming outlier detector over 2D points using a sliding-window
+mean/variance check, flagging points whose recent variance collapses
+or whose running mean drifts too far from known reference values.
+"""
 from statistics import mean, variance
-import numpy as np
 
-data = [[1,2], [3,4], [5,6], [7,8], [9,10]]
+data = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]]
 
 window_size = 3
-MX = 5
-VX = 2
-MY = 10
-VY = 1
+MX, VX = 5, 2  # reference mean/variance for the x-coordinate
+MY, VY = 10, 1  # reference mean/variance for the y-coordinate
 
-mmx = []
-mmy = []
-mvx = []
-mvy = []
+mmx, mmy = [], []  # running means
+mvx, mvy = [], []  # sliding window of recent values
 outliers = []
 
-for i, point in enumerate(data):
-    x = point[0]
-    y = point[1]
+for i, (x, y) in enumerate(data):
     if i < window_size:
         mmx.append(x)
         mmy.append(y)
@@ -30,6 +28,7 @@ for i, point in enumerate(data):
         mvy.append(y)
         del mvx[0]
         del mvy[0]
+
     if (variance(mvx) / VX) < 0.05 or (variance(mvy) / VY) < 0.05:
         outliers.append(i)
     elif variance(mvx) == 0 or variance(mvy) == 0:
@@ -38,4 +37,3 @@ for i, point in enumerate(data):
         outliers.append(i)
 
 print("Outliers:", outliers)
-
