@@ -29,6 +29,10 @@ for i, (x, y) in enumerate(data):
         del mvx[0]
         del mvy[0]
 
+    # variance() needs at least 2 points - skip the check until the window has filled
+    if len(mvx) < 2:
+        continue
+
     if (variance(mvx) / VX) < 0.05 or (variance(mvy) / VY) < 0.05:
         outliers.append(i)
     elif variance(mvx) == 0 or variance(mvy) == 0:
