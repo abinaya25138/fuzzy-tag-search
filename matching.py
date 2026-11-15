@@ -10,7 +10,7 @@ Fixes three problems in the first versions (jaccard.py, lev.py):
    identical. Every score here respects character order.
 3. Raw Levenshtein distance grew with description length, so it ranked long
    descriptions lower regardless of content. Here each query is compared
-   word by word and scores are normalized to 0-1.
+   word by word with Jaro-Winkler similarity, which is already 0-1.
 
 Plant tags are full of abbreviations ("CNDR" for condenser, "TEMP" for
 temperature), so a word also matches when the query is an in-order
@@ -29,19 +29,6 @@ import re
 def normalize(text):
     """Upper-case and split into words, treating punctuation as a separator."""
     return re.findall(r"[A-Z0-9]+", text.upper())
-
-
-def levenshtein_ratio(a, b):
-    """1 minus the edit distance divided by the longer length: 1.0 for identical strings."""
-    if not a and not b:
-        return 1.0
-    prev = list(range(len(b) + 1))
-    for i, ca in enumerate(a, 1):
-        cur = [i]
-        for j, cb in enumerate(b, 1):
-            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
-        prev = cur
-    return 1 - prev[-1] / max(len(a), len(b))
 
 
 def jaro_winkler(a, b, prefix_scale=0.1):
@@ -86,7 +73,7 @@ def word_score(query_word, tag_word):
         return 1.0
     if is_abbreviation(query_word, tag_word) or is_abbreviation(tag_word, query_word):
         return 0.9
-    return max(jaro_winkler(query_word, tag_word), levenshtein_ratio(query_word, tag_word))
+    return jaro_winkler(query_word, tag_word)
 
 
 def is_acronym(short, words):

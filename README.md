@@ -11,7 +11,7 @@ Three small Flask microservices built during an internship, each solving the sam
 | `jaccard.py` | Jaccard similarity — overlap between the character sets of the query and each description |
 | `lev.py` | Levenshtein (edit) distance |
 | `whooshy.py` | Full-text search via the [Whoosh](https://whoosh.readthedocs.io/) index, rebuilt hourly in the background |
-| `improved_search.py` | The fixed version: every tag scored with order- and abbreviation-aware matching (`matching.py`), cut at a threshold chosen from labeled data |
+| `improved_search.py` | The fixed version: every tag scored with Jaro-Winkler plus abbreviation matching (`matching.py`), cut at a threshold chosen from labeled data |
 
 All three expose the same contract:
 
@@ -33,7 +33,7 @@ Comparing the three services on the same queries showed three problems in `jacca
 I fixed these during the internship. That code stayed in ExactSpace's internal systems, so `matching.py` and `improved_search.py` re-implement the fixes for this public repo:
 
 - **Every tag is scored.** There is no exact-substring filter.
-- **Scores respect order and abbreviations.** Each query word is matched against each tag word using Jaro-Winkler and a normalized edit-distance ratio. A word also matches when it is an in-order abbreviation (`CNDR` → `CONDENSER`) or the initials of consecutive words (`BFP` → `BOILER FEED PUMP`).
+- **Scores respect order and abbreviations.** Each query word is matched against each tag word using Jaro-Winkler similarity, which respects letter order and rewards a shared prefix. A word also matches when it is an in-order abbreviation (`CNDR` → `CONDENSER`) or the initials of consecutive words (`BFP` → `BOILER FEED PUMP`).
 - **The threshold is chosen from labeled data.** `choose_threshold.py` takes query-tag pairs labeled "same equipment" or not, and reports precision, recall and F1 at each cutoff.
 
 On example tags, for the query `CNDR`:
